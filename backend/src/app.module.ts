@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Analysis } from './analysis/analysis.entity';
 import { AgentResult } from './agent-result/agent-result.entity';
+import { AnalysisModule } from './analysis/analysis.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AgentResult } from './agent-result/agent-result.entity';
       }),
       inject: [ConfigService],
     }),
+    AnalysisModule,
   ],
 })
 export class AppModule {}
