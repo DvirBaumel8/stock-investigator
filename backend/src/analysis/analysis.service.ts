@@ -75,7 +75,7 @@ export class AnalysisService {
           where: { id: analysisId },
           relations: ['agentResults'],
         })
-        .then((analysis) => {
+        .then(async (analysis) => {
           if (!analysis) {
             subscriber.error(new Error(`Analysis ${analysisId} not found`));
             return;
@@ -93,9 +93,25 @@ export class AnalysisService {
 
           let subject = this.activeStreams.get(analysisId);
           if (!subject) {
-            subscriber.error(
-              new Error(`No active stream for running analysis ${analysisId}`),
-            );
+            // Race: runAgents may have finished between our findOne and this check.
+            // Re-query to get the latest state before erroring.
+            const refreshed = await this.analysisRepo.findOne({
+              where: { id: analysisId },
+              relations: ['agentResults'],
+            });
+            if (
+              refreshed &&
+              (refreshed.status === AnalysisStatus.COMPLETED ||
+                refreshed.status === AnalysisStatus.FAILED)
+            ) {
+              refreshed.agentResults.forEach((r) => subscriber.next({ data: r }));
+              subscriber.next({ type: 'complete', data: {} } as MessageEvent);
+              subscriber.complete();
+            } else {
+              subscriber.error(
+                new Error(`No active stream for running analysis ${analysisId}`),
+              );
+            }
             return;
           }
 
@@ -116,53 +132,59 @@ export class AnalysisService {
     ticker: string,
     subject: Subject<MessageEvent>,
   ): Promise<void> {
-    const results: AgentResult[] = [];
+    const results: AgentResult[] = new Array(this.agents.length);
 
-    await Promise.all(
-      this.agents.map(async (agent) => {
-        const start = Date.now();
-        let result: AgentResult = await this.agentResultRepo.save({
-          analysisId,
-          agentName: agent.agentName,
-          status: AgentResultStatus.PENDING,
-        });
-
-        try {
-          const output = await agent.analyze(ticker);
-          result = await this.agentResultRepo.save({
-            ...result,
-            status: AgentResultStatus.COMPLETED,
-            output,
-            durationMs: Date.now() - start,
+    try {
+      await Promise.all(
+        this.agents.map(async (agent, i) => {
+          const start = Date.now();
+          let result: AgentResult = await this.agentResultRepo.save({
+            analysisId,
+            agentName: agent.agentName,
+            status: AgentResultStatus.PENDING,
           });
-        } catch (err) {
-          this.logger.error(
-            `Agent ${agent.agentName} failed: ${(err as Error).message}`,
-          );
-          result = await this.agentResultRepo.save({
-            ...result,
-            status: AgentResultStatus.FAILED,
-            error: (err as Error).message,
-            durationMs: Date.now() - start,
-          });
-        }
 
-        results.push(result);
-        subject.next({ data: result });
-      }),
-    );
+          try {
+            const output = await agent.analyze(ticker);
+            result = await this.agentResultRepo.save({
+              ...result,
+              status: AgentResultStatus.COMPLETED,
+              output,
+              durationMs: Date.now() - start,
+            });
+          } catch (err) {
+            this.logger.error(
+              `Agent ${agent.agentName} failed for ${ticker} (${analysisId}): ${(err as Error).message}`,
+            );
+            result = await this.agentResultRepo.save({
+              ...result,
+              status: AgentResultStatus.FAILED,
+              error: (err as Error).message,
+              durationMs: Date.now() - start,
+            });
+          }
 
-    const anySucceeded = results.some(
-      (r) => r.status === AgentResultStatus.COMPLETED,
-    );
+          results[i] = result;
+          subject.next({ data: result });
+        }),
+      );
 
-    await this.analysisRepo.update(analysisId, {
-      status: anySucceeded ? AnalysisStatus.COMPLETED : AnalysisStatus.FAILED,
-      completedAt: new Date(),
-    });
+      const anySucceeded = results.some(
+        (r) => r.status === AgentResultStatus.COMPLETED,
+      );
 
-    subject.next({ type: 'complete', data: {} } as MessageEvent);
-    subject.complete();
-    this.activeStreams.delete(analysisId);
+      await this.analysisRepo.update(analysisId, {
+        status: anySucceeded ? AnalysisStatus.COMPLETED : AnalysisStatus.FAILED,
+        completedAt: new Date(),
+      });
+
+      subject.next({ type: 'complete', data: {} } as MessageEvent);
+      subject.complete();
+    } catch (err) {
+      this.logger.error(`runAgents failed for ${analysisId}: ${(err as Error).message}`);
+      subject.error(err);
+    } finally {
+      this.activeStreams.delete(analysisId);
+    }
   }
 }
