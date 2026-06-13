@@ -69,6 +69,7 @@ export class AnalysisService {
   getStream(analysisId: string): Observable<MessageEvent> {
     return new Observable<MessageEvent>((subscriber) => {
       let innerSub: { unsubscribe(): void } | undefined;
+      let torn = false;
 
       this.analysisRepo
         .findOne({
@@ -120,10 +121,14 @@ export class AnalysisService {
             error: (e) => subscriber.error(e),
             complete: () => subscriber.complete(),
           });
+          if (torn) innerSub.unsubscribe();
         })
         .catch((err) => subscriber.error(err));
 
-      return () => innerSub?.unsubscribe();
+      return () => {
+        torn = true;
+        innerSub?.unsubscribe();
+      };
     });
   }
 
