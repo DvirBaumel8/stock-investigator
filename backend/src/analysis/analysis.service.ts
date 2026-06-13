@@ -68,6 +68,8 @@ export class AnalysisService {
 
   getStream(analysisId: string): Observable<MessageEvent> {
     return new Observable<MessageEvent>((subscriber) => {
+      let innerSub: { unsubscribe(): void } | undefined;
+
       this.analysisRepo
         .findOne({
           where: { id: analysisId },
@@ -91,19 +93,21 @@ export class AnalysisService {
 
           let subject = this.activeStreams.get(analysisId);
           if (!subject) {
-            subject = new Subject<MessageEvent>();
-            this.activeStreams.set(analysisId, subject);
+            subscriber.error(
+              new Error(`No active stream for running analysis ${analysisId}`),
+            );
+            return;
           }
 
-          const sub = subject.subscribe({
+          innerSub = subject.subscribe({
             next: (v) => subscriber.next(v),
             error: (e) => subscriber.error(e),
             complete: () => subscriber.complete(),
           });
-
-          return () => sub.unsubscribe();
         })
         .catch((err) => subscriber.error(err));
+
+      return () => innerSub?.unsubscribe();
     });
   }
 
