@@ -1,2 +1,10 @@
 *.xml
 *.iml
+
+# IntelliJ
+.idea/shelf/
+.idea/workspace.xml
+.idea/httpRequests/
+.idea/queries/
+.idea/dataSources/
+.idea/dataSources.local.xml
