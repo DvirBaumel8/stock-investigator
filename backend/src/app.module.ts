@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Analysis } from './analysis/analysis.entity';
+import { AgentResult } from './agent-result/agent-result.entity';
 
 @Module({
   imports: [
@@ -10,7 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
-        entities: [],
+        entities: [Analysis, AgentResult],
         synchronize: true,
         logging: false,
       }),
