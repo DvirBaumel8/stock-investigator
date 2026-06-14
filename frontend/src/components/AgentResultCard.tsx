@@ -13,13 +13,14 @@ export function AgentResultCard({ result }: AgentResultCardProps) {
   const label = AGENT_LABELS[result.agentName] ?? result.agentName;
 
   const cardStyle: React.CSSProperties = {
-    border: "1px solid #e0e0e0",
-    borderRadius: 8,
+    border: '1px solid #30363d',
+    borderRadius: 12,
     padding: 16,
-    background: "#fff",
+    background: '#161b22',
+    color: '#e6edf3',
     minWidth: 300,
     maxWidth: 520,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
   };
 
   return (
@@ -36,14 +37,12 @@ export function AgentResultCard({ result }: AgentResultCardProps) {
         <StatusBadge status={result.status} />
       </div>
 
-      {result.status === "pending" && (
-        <div style={{ color: "#888", fontSize: 13 }}>Running…</div>
+      {result.status === 'pending' && (
+        <div style={{ color: '#7d8590', fontSize: 13 }}>Running…</div>
       )}
 
-      {result.status === "failed" && (
-        <div style={{ color: "#c0392b", fontSize: 13 }}>
-          Error: {result.error}
-        </div>
+      {result.status === 'failed' && (
+        <div style={{ color: '#f85149', fontSize: 13 }}>Error: {result.error}</div>
       )}
 
       {result.status === "completed" && result.output && (
@@ -51,7 +50,7 @@ export function AgentResultCard({ result }: AgentResultCardProps) {
       )}
 
       {result.durationMs != null && (
-        <div style={{ marginTop: 8, fontSize: 11, color: "#aaa" }}>
+        <div style={{ marginTop: 8, fontSize: 11, color: '#7d8590' }}>
           Completed in {(result.durationMs / 1000).toFixed(1)}s
         </div>
       )}
@@ -61,9 +60,9 @@ export function AgentResultCard({ result }: AgentResultCardProps) {
 
 function StatusBadge({ status }: { status: AgentResultEvent["status"] }) {
   const colors: Record<string, string> = {
-    pending: "#f39c12",
-    completed: "#27ae60",
-    failed: "#c0392b",
+    pending:   '#d29922',
+    completed: '#3fb950',
+    failed:    '#f85149',
   };
   return (
     <span
@@ -80,20 +79,10 @@ function StatusBadge({ status }: { status: AgentResultEvent["status"] }) {
   );
 }
 
-function OutputRenderer({
-  agentName,
-  output,
-}: {
-  agentName: string;
-  output: Record<string, unknown>;
-}) {
-  if (agentName === "technical") return <TechnicalOutput data={output} />;
-  if (agentName === "news_sentiment") return <NewsOutput data={output} />;
-  return (
-    <pre style={{ fontSize: 12, overflow: "auto" }}>
-      {JSON.stringify(output, null, 2)}
-    </pre>
-  );
+function OutputRenderer({ agentName, output }: { agentName: string; output: Record<string, unknown> }) {
+  if (agentName === 'technical') return <TechnicalOutput data={output} />;
+  if (agentName === 'news_sentiment') return <NewsOutput data={output} />;
+  return <pre style={{ fontSize: 12, overflow: 'auto', color: '#e6edf3' }}>{JSON.stringify(output, null, 2)}</pre>;
 }
 
 function TechnicalOutput({ data }: { data: Record<string, unknown> }) {
@@ -130,15 +119,10 @@ function TechnicalOutput({ data }: { data: Record<string, unknown> }) {
 }
 
 function NewsOutput({ data }: { data: Record<string, unknown> }) {
-  const headlines = data.topHeadlines as
-    | Array<{ title: string; sentiment: string }>
-    | undefined;
+  const headlines = data.topHeadlines as Array<{ title: string; sentiment: string }> | undefined;
   const sentimentColor =
-    data.overallSentiment === "bullish"
-      ? "#27ae60"
-      : data.overallSentiment === "bearish"
-        ? "#c0392b"
-        : "#888";
+    data.overallSentiment === 'bullish' ? '#3fb950' :
+    data.overallSentiment === 'bearish' ? '#f85149' : '#7d8590';
   return (
     <div style={{ fontSize: 13 }}>
       <div>
@@ -152,6 +136,7 @@ function NewsOutput({ data }: { data: Record<string, unknown> }) {
       <div style={{ marginTop: 6, color: "#555" }}>
         {data.summary as string}
       </div>
+      <div style={{ marginTop: 6, color: '#7d8590' }}>{data.summary as string}</div>
       {headlines && (
         <div style={{ marginTop: 8 }}>
           <b>Recent headlines:</b>

@@ -75,18 +75,17 @@ export function useAnalysisStream(): UseAnalysisStreamReturn {
           es.close();
         });
 
-        es.onerror = () => {
-          setIsLoading(false);
-          setIsComplete(true);
-          es.close();
-        };
-      } catch (err) {
-        setError((err as Error).message);
+      es.onerror = () => {
+        setError('Stream connection lost. Please try again.');
         setIsLoading(false);
-      }
-    },
-    [reset],
-  );
+        setIsComplete(true);
+        es.close();
+      };
+    } catch (err) {
+      setError((err as Error).message);
+      setIsLoading(false);
+    }
+  }, [reset]);
 
   useEffect(() => {
     return () => esRef.current?.close();

@@ -1,5 +1,16 @@
 export type AgentResultStatus = "pending" | "completed" | "failed";
 
+export interface TickerSuggestion {
+  symbol: string;
+  name: string;
+  assetType?: string;
+}
+
+export interface HistoryEntry {
+  symbol: string;
+  timestamp: string;
+}
+
 export interface AgentResultEvent {
   id: string;
   agentName: string;
