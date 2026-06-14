@@ -72,6 +72,19 @@ describe('TickersService', () => {
         { active: false },
       );
     });
+
+    it('upserts in chunks of 500', async () => {
+      const records = Array.from({ length: 501 }, (_, i) => ({
+        symbol: `SYM${i}`,
+        name: 'X',
+        exchange: 'NYSE',
+        assetType: 'Stock',
+      }));
+      await service.upsertMany(records, new Date());
+      expect(repo.upsert).toHaveBeenCalledTimes(2);
+      expect(repo.upsert.mock.calls[0][0]).toHaveLength(500);
+      expect(repo.upsert.mock.calls[1][0]).toHaveLength(1);
+    });
   });
 
   describe('search', () => {
@@ -111,6 +124,18 @@ describe('TickersService', () => {
       expect(repo.find.mock.calls[0][0].where[0].symbol).toEqual(
         ILike('a\\%b\\_c%'),
       );
+    });
+
+    it('escapes a literal backslash in the search term', async () => {
+      await service.search('a\\b', 5);
+      expect(repo.find.mock.calls[0][0].where[0].symbol).toEqual(
+        ILike('a\\\\b%'),
+      );
+    });
+
+    it('clamps a non-positive limit up to 1', async () => {
+      await service.search('a', 0);
+      expect(repo.find.mock.calls[0][0].take).toBe(1);
     });
   });
 });
