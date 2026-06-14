@@ -1,4 +1,4 @@
-import { TickersController } from './tickers.controller';
+import { TickersController } from '../src/tickers/tickers.controller';
 
 describe('TickersController', () => {
   let controller: TickersController;

@@ -1,4 +1,4 @@
-import { AlphaVantageTickerProvider } from './alpha-vantage-ticker.provider';
+import { AlphaVantageTickerProvider } from '../src/tickers/alpha-vantage-ticker.provider';
 
 const makeProvider = (apiKey: string | null = 'KEY') =>
   new AlphaVantageTickerProvider({

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ILike, LessThan } from 'typeorm';
-import { TickersService } from './tickers.service';
-import { Ticker } from './ticker.entity';
+import { TickersService } from '../src/tickers/tickers.service';
+import { Ticker } from '../src/tickers/ticker.entity';
 
 describe('TickersService', () => {
   let service: TickersService;

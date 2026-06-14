@@ -1,4 +1,4 @@
-import { TickersRefreshService } from './tickers-refresh.service';
+import { TickersRefreshService } from '../src/tickers/tickers-refresh.service';
 
 describe('TickersRefreshService', () => {
   let provider: any;

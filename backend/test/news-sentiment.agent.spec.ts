@@ -1,4 +1,4 @@
-import { NewsSentimentAgent } from "./news-sentiment.agent";
+import { NewsSentimentAgent } from "../src/agents/news-sentiment/news-sentiment.agent";
 
 describe("NewsSentimentAgent (stub)", () => {
   it("returns a record with agentName and ticker", async () => {

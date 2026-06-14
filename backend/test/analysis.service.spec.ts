@@ -1,12 +1,11 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import { ConfigService } from "@nestjs/config";
-import { Repository } from "typeorm";
-import { AnalysisService } from "./analysis.service";
-import { Analysis, AnalysisStatus } from "./analysis.entity";
-import { AgentResult } from "../agent-result/agent-result.entity";
-import { TechnicalAgent } from "../agents/technical/technical.agent";
-import { NewsSentimentAgent } from "../agents/news-sentiment/news-sentiment.agent";
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import { AnalysisService } from './analysis.service';
+import { Analysis, AnalysisStatus } from './analysis.entity';
+import { AgentResult, AgentResultStatus } from '../agent-result/agent-result.entity';
+import { TechnicalAgent } from '../agents/technical/technical.agent';
+import { NewsSentimentAgent } from '../agents/news-sentiment/news-sentiment.agent';
 
 const makeAnalysis = (overrides: Partial<Analysis> = {}): Analysis =>
   ({
