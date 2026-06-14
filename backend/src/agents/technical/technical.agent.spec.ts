@@ -1,11 +1,11 @@
-import { TechnicalAgent } from './technical.agent';
+import { TechnicalAgent } from "./technical.agent";
 
-describe('TechnicalAgent (stub)', () => {
-  it('returns a record with agentName and ticker', async () => {
+describe("TechnicalAgent (stub)", () => {
+  it("returns a record with agentName and ticker", async () => {
     const agent = new TechnicalAgent();
-    const result = await agent.analyze('AAPL');
-    expect(agent.agentName).toBe('technical');
-    expect(result.ticker).toBe('AAPL');
+    const result = await agent.analyze("AAPL");
+    expect(agent.agentName).toBe("technical");
+    expect(result.ticker).toBe("AAPL");
     expect(Array.isArray(result.signals)).toBe(true);
   });
 });

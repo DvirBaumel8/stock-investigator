@@ -1,0 +1,34 @@
+{
+  "name": "stock-investigator",
+  "private": true,
+  "scripts": {
+    "setup":             "npm install --prefix frontend && npm install --prefix backend",
+
+    "fe:dev":            "npm run dev --prefix frontend",
+    "fe:build":          "npm run build --prefix frontend",
+    "fe:preview":        "npm run preview --prefix frontend",
+    "fe:typecheck":      "npm run typecheck --prefix frontend",
+    "fe:lint":           "npm run lint --prefix frontend",
+    "fe:lint:fix":       "npm run lint:fix --prefix frontend",
+    "fe:format":         "npm run format --prefix frontend",
+    "fe:format:check":   "npm run format:check --prefix frontend",
+
+    "be:dev":            "npm run start:dev --prefix backend",
+    "be:build":          "npm run build --prefix backend",
+    "be:test":           "npm run test --prefix backend",
+    "be:test:watch":     "npm run test:watch --prefix backend",
+    "be:typecheck":      "npm run typecheck --prefix backend",
+    "be:lint":           "npm run lint --prefix backend",
+    "be:lint:fix":       "npm run lint:fix --prefix backend",
+    "be:format":         "npm run format --prefix backend",
+    "be:format:check":   "npm run format:check --prefix backend",
+
+    "build":             "npm run fe:build && npm run be:build",
+    "test":              "npm run be:test",
+    "tsc":               "npm run fe:typecheck && npm run be:typecheck",
+    "lint":              "npm run fe:lint && npm run be:lint",
+    "lint:fix":          "npm run fe:lint:fix && npm run be:lint:fix",
+    "format":            "npm run fe:format && npm run be:format",
+    "format:check":      "npm run fe:format:check && npm run be:format:check"
+  }
+}

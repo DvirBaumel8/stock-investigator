@@ -1,4 +1,4 @@
-export type AgentResultStatus = 'pending' | 'completed' | 'failed';
+export type AgentResultStatus = "pending" | "completed" | "failed";
 
 export interface AgentResultEvent {
   id: string;

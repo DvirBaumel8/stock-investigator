@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Analysis } from './analysis/analysis.entity';
-import { AgentResult } from './agent-result/agent-result.entity';
-import { AnalysisModule } from './analysis/analysis.module';
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { Analysis } from "./analysis/analysis.entity";
+import { AgentResult } from "./agent-result/agent-result.entity";
+import { AnalysisModule } from "./analysis/analysis.module";
 
 @Module({
   imports: [
@@ -11,8 +11,8 @@ import { AnalysisModule } from './analysis/analysis.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.get<string>('DATABASE_URL'),
+        type: "postgres",
+        url: configService.get<string>("DATABASE_URL"),
         entities: [Analysis, AgentResult],
         synchronize: true,
         logging: false,

@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { TechnicalAgent } from './technical.agent';
+import { Module } from "@nestjs/common";
+import { TechnicalAgent } from "./technical.agent";
 
 @Module({
   providers: [TechnicalAgent],
