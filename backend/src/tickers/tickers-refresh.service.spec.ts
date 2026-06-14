@@ -15,11 +15,16 @@ describe('TickersRefreshService', () => {
   });
 
   describe('onModuleInit', () => {
-    it('seeds when the table is empty', async () => {
-      tickersService.count.mockResolvedValueOnce(0);
-      const spy = jest.spyOn(service, 'refresh').mockResolvedValue();
-      await service.onModuleInit();
+    it('seeds when the table is empty without blocking boot', async () => {
+      let resolveRefresh!: () => void;
+      const spy = jest.spyOn(service, 'refresh').mockReturnValue(
+        new Promise<void>((res) => {
+          resolveRefresh = res;
+        }),
+      );
+      await service.onModuleInit(); // must resolve even though refresh is still pending
       expect(spy).toHaveBeenCalled();
+      resolveRefresh(); // cleanup the pending promise
     });
 
     it('does not seed when the table already has tickers', async () => {
@@ -56,6 +61,14 @@ describe('TickersRefreshService', () => {
       (service as any).isRunning = true;
       await service.refresh();
       expect(provider.fetchActiveTickers).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when upsertMany fails', async () => {
+      provider.fetchActiveTickers.mockResolvedValueOnce([
+        { symbol: 'AAPL', name: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+      ]);
+      tickersService.upsertMany.mockRejectedValueOnce(new Error('DB timeout'));
+      await expect(service.refresh()).resolves.toBeUndefined();
     });
   });
 });
