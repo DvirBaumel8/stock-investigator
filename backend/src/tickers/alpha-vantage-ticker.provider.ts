@@ -26,7 +26,9 @@ export class AlphaVantageTickerProvider {
       throw new Error(`Alpha Vantage request failed: HTTP ${response.status}`);
     }
     const body = await response.text();
-    return this.parseCsv(body);
+    const records = this.parseCsv(body);
+    this.logger.log(`Fetched ${records.length} active Stock/ETF tickers from Alpha Vantage`);
+    return records;
   }
 
   // Columns: symbol,name,exchange,assetType,ipoDate,delistingDate,status

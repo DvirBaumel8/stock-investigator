@@ -63,11 +63,16 @@ describe('AlphaVantageTickerProvider', () => {
       );
     });
 
+    it('throws on a non-OK HTTP status', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false, status: 429 } as any);
+      await expect(makeProvider().fetchActiveTickers()).rejects.toThrow(/HTTP 429/);
+    });
+
     it('fetches and parses the CSV body', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
+      jest.spyOn(global, 'fetch').mockResolvedValue({
         ok: true,
         text: async () => CSV,
-      }) as any;
+      } as any);
 
       const records = await makeProvider().fetchActiveTickers();
       expect((global.fetch as jest.Mock).mock.calls[0][0]).toContain(
