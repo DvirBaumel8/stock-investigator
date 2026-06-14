@@ -52,7 +52,7 @@ without hitting the network.
 
 ```
 id          uuid          PK (PrimaryGeneratedColumn 'uuid')
-symbol      varchar(10)   UNIQUE, indexed
+symbol      varchar(32)   UNIQUE, indexed  -- some live symbols exceed 10 chars (e.g. NXT(EXP20091224))
 name        varchar
 exchange    varchar
 assetType   varchar       -- 'Stock' | 'ETF'

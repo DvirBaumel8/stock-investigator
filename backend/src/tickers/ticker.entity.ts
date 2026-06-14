@@ -13,7 +13,7 @@ export class Ticker {
   id: string;
 
   @Index({ unique: true })
-  @Column({ length: 10 })
+  @Column({ length: 32 })
   symbol: string;
 
   @Column()
