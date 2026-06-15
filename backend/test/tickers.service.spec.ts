@@ -88,12 +88,11 @@ describe('TickersService', () => {
   });
 
   describe('search', () => {
-    it('searches by symbol prefix and name substring when given a term', async () => {
+    it('searches by symbol prefix when given a term', async () => {
       await service.search('aap', 5);
       expect(repo.find).toHaveBeenCalledWith({
         where: [
           { active: true, symbol: ILike('aap%') },
-          { active: true, name: ILike('%aap%') },
         ],
         order: { symbol: 'ASC' },
         take: 5,

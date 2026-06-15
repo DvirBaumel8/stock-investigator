@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, LessThan } from 'typeorm';
 import { Ticker } from './ticker.entity';
@@ -44,14 +44,12 @@ export class TickersService {
 
   async search(search?: string, limit?: number): Promise<Ticker[]> {
     const take = Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
-
     const term = search?.trim();
     if (term) {
       const q = this.escapeLike(term);
       return this.tickerRepo.find({
         where: [
           { active: true, symbol: ILike(`${q}%`) },
-          { active: true, name: ILike(`%${q}%`) },
         ],
         order: { symbol: 'ASC' },
         take,
