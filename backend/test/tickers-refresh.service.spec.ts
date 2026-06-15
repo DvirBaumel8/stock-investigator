@@ -9,7 +9,7 @@ describe('TickersRefreshService', () => {
     provider = { fetchActiveTickers: jest.fn().mockResolvedValue([]) };
     tickersService = {
       count: jest.fn().mockResolvedValue(0),
-      upsertMany: jest.fn().mockResolvedValue(undefined),
+      replaceAll: jest.fn().mockResolvedValue(undefined),
     };
     service = new TickersRefreshService(provider, tickersService);
   });
@@ -38,23 +38,20 @@ describe('TickersRefreshService', () => {
   describe('refresh', () => {
     it('fetches records and upserts them with a run timestamp', async () => {
       const records = [
-        { symbol: 'AAPL', name: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+        { symbol: 'AAPL', companyName: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
       ];
       provider.fetchActiveTickers.mockResolvedValueOnce(records);
 
       await service.refresh();
 
       expect(provider.fetchActiveTickers).toHaveBeenCalled();
-      expect(tickersService.upsertMany).toHaveBeenCalledWith(
-        records,
-        expect.any(Date),
-      );
+      expect(tickersService.replaceAll).toHaveBeenCalledWith(records);
     });
 
     it('does not throw and leaves data intact when the provider fails', async () => {
       provider.fetchActiveTickers.mockRejectedValueOnce(new Error('rate limit'));
       await expect(service.refresh()).resolves.toBeUndefined();
-      expect(tickersService.upsertMany).not.toHaveBeenCalled();
+      expect(tickersService.replaceAll).not.toHaveBeenCalled();
     });
 
     it('skips when a refresh is already running', async () => {
@@ -65,9 +62,9 @@ describe('TickersRefreshService', () => {
 
     it('does not throw when upsertMany fails', async () => {
       provider.fetchActiveTickers.mockResolvedValueOnce([
-        { symbol: 'AAPL', name: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+        { symbol: 'AAPL', companyName: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
       ]);
-      tickersService.upsertMany.mockRejectedValueOnce(new Error('DB timeout'));
+      tickersService.replaceAll.mockRejectedValueOnce(new Error('DB timeout'));
       await expect(service.refresh()).resolves.toBeUndefined();
     });
   });

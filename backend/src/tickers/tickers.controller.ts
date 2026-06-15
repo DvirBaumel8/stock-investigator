@@ -1,5 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { TickersService } from './tickers.service';
+
+interface TickerResponse {
+  symbol: string;
+  companyName: string;
+  exchange: string;
+  assetType: string;
+}
 
 @Controller('tickers')
 export class TickersController {
@@ -8,17 +15,13 @@ export class TickersController {
   @Get()
   async list(
     @Query('search') search?: string,
-    @Query('limit') limit?: string,
-  ) {
-    const parsed = limit !== undefined ? parseInt(limit, 10) : undefined;
-    const safeLimit =
-      parsed !== undefined && !Number.isNaN(parsed) ? parsed : undefined;
-
-    const tickers = await this.tickersService.search(search, safeLimit);
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ): Promise<TickerResponse[]> {
+    const tickers = await this.tickersService.search(search, limit);
 
     return tickers.map((t) => ({
       symbol: t.symbol,
-      name: t.name,
+      companyName: t.companyName,
       exchange: t.exchange,
       assetType: t.assetType,
     }));

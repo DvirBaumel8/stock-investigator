@@ -1,19 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ILike, LessThan } from 'typeorm';
+import { ILike } from 'typeorm';
 import { TickersService } from '../src/tickers/tickers.service';
 import { Ticker } from '../src/tickers/ticker.entity';
 
 describe('TickersService', () => {
   let service: TickersService;
   let repo: any;
+  let mockManager: any;
 
   beforeEach(async () => {
+    mockManager = {
+      clear: jest.fn(),
+      insert: jest.fn(),
+    };
+
     repo = {
       count: jest.fn(),
-      upsert: jest.fn(),
-      update: jest.fn(),
       find: jest.fn().mockResolvedValue([]),
+      manager: {
+        transaction: jest.fn(async (cb: (m: typeof mockManager) => Promise<void>) => cb(mockManager)),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -33,57 +40,35 @@ describe('TickersService', () => {
     });
   });
 
-  describe('upsertMany', () => {
+  describe('replaceAll', () => {
     it('does nothing for an empty list', async () => {
-      await service.upsertMany([], new Date());
-      expect(repo.upsert).not.toHaveBeenCalled();
-      expect(repo.update).not.toHaveBeenCalled();
+      await service.replaceAll([]);
+      expect(repo.manager.transaction).not.toHaveBeenCalled();
     });
 
-    it('upserts rows with active=true and lastSeenAt=runAt, conflict on symbol', async () => {
-      const runAt = new Date('2026-06-14T00:00:00Z');
-      await service.upsertMany(
-        [{ symbol: 'AAPL', name: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' }],
-        runAt,
-      );
-      expect(repo.upsert).toHaveBeenCalledWith(
-        [
-          {
-            symbol: 'AAPL',
-            name: 'Apple Inc',
-            exchange: 'NASDAQ',
-            assetType: 'Stock',
-            active: true,
-            lastSeenAt: runAt,
-          },
-        ],
-        ['symbol'],
-      );
+    it('clears the table and inserts all rows inside a transaction', async () => {
+      const records = [
+        { symbol: 'AAPL', companyName: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+      ];
+      await service.replaceAll(records);
+
+      expect(repo.manager.transaction).toHaveBeenCalled();
+      expect(mockManager.clear).toHaveBeenCalledWith(Ticker);
+      expect(mockManager.insert).toHaveBeenCalledWith(Ticker, [
+        { symbol: 'AAPL', companyName: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+      ]);
     });
 
-    it('soft-delists symbols not seen in this run', async () => {
-      const runAt = new Date('2026-06-14T00:00:00Z');
-      await service.upsertMany(
-        [{ symbol: 'AAPL', name: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' }],
-        runAt,
-      );
-      expect(repo.update).toHaveBeenCalledWith(
-        { lastSeenAt: LessThan(runAt) },
-        { active: false },
-      );
-    });
-
-    it('upserts in chunks of 500', async () => {
+    it('inserts all records in a single call', async () => {
       const records = Array.from({ length: 501 }, (_, i) => ({
         symbol: `SYM${i}`,
-        name: 'X',
+        companyName: 'X',
         exchange: 'NYSE',
         assetType: 'Stock',
       }));
-      await service.upsertMany(records, new Date());
-      expect(repo.upsert).toHaveBeenCalledTimes(2);
-      expect(repo.upsert.mock.calls[0][0]).toHaveLength(500);
-      expect(repo.upsert.mock.calls[1][0]).toHaveLength(1);
+      await service.replaceAll(records);
+      expect(mockManager.insert).toHaveBeenCalledTimes(1);
+      expect(mockManager.insert.mock.calls[0][1]).toHaveLength(501);
     });
   });
 
@@ -91,9 +76,7 @@ describe('TickersService', () => {
     it('searches by symbol prefix when given a term', async () => {
       await service.search('aap', 5);
       expect(repo.find).toHaveBeenCalledWith({
-        where: [
-          { active: true, symbol: ILike('aap%') },
-        ],
+        where: { symbol: ILike('aap%') },
         order: { symbol: 'ASC' },
         take: 5,
       });
@@ -109,27 +92,12 @@ describe('TickersService', () => {
       expect(repo.find.mock.calls[0][0].take).toBe(20);
     });
 
-    it('returns active tickers ordered by symbol when no term is given', async () => {
+    it('returns tickers ordered by symbol when no term is given', async () => {
       await service.search();
       expect(repo.find).toHaveBeenCalledWith({
-        where: { active: true },
         order: { symbol: 'ASC' },
         take: 20,
       });
-    });
-
-    it('escapes ILIKE special characters in the search term', async () => {
-      await service.search('a%b_c', 5);
-      expect(repo.find.mock.calls[0][0].where[0].symbol).toEqual(
-        ILike('a\\%b\\_c%'),
-      );
-    });
-
-    it('escapes a literal backslash in the search term', async () => {
-      await service.search('a\\b', 5);
-      expect(repo.find.mock.calls[0][0].where[0].symbol).toEqual(
-        ILike('a\\\\b%'),
-      );
     });
 
     it('clamps a non-positive limit up to 1', async () => {

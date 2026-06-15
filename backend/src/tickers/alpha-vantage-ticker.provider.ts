@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 export interface TickerRecord {
   symbol: string;
-  name: string;
+  companyName: string;
   exchange: string;
   assetType: string;
 }
@@ -61,7 +61,7 @@ export class AlphaVantageTickerProvider {
       const symbol = cols[0].trim();
       const assetType = cols[cols.length - 4].trim();
       const exchange = cols[cols.length - 5].trim();
-      const name = cols
+      const companyName = cols
         .slice(1, cols.length - 5)
         .join(',')
         .trim()
@@ -70,7 +70,7 @@ export class AlphaVantageTickerProvider {
       if (!symbol) continue;
       if (assetType !== 'Stock' && assetType !== 'ETF') continue;
 
-      records.push({ symbol, name, exchange, assetType });
+      records.push({ symbol, companyName, exchange, assetType });
     }
     return records;
   }

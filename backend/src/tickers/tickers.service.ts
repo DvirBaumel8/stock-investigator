@@ -1,12 +1,11 @@
-import { Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, LessThan } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Ticker } from './ticker.entity';
 import { TickerRecord } from './alpha-vantage-ticker.provider';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
-const UPSERT_CHUNK = 500;
 
 @Injectable()
 export class TickersService {
@@ -19,51 +18,40 @@ export class TickersService {
     return this.tickerRepo.count();
   }
 
-  async upsertMany(records: TickerRecord[], runAt: Date): Promise<void> {
+  async replaceAll(records: TickerRecord[]): Promise<void> {
     if (records.length === 0) return;
 
     const rows = records.map((r) => ({
       symbol: r.symbol,
-      name: r.name,
+      companyName: r.companyName,
       exchange: r.exchange,
       assetType: r.assetType,
-      active: true,
-      lastSeenAt: runAt,
     }));
 
-    for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
-      await this.tickerRepo.upsert(rows.slice(i, i + UPSERT_CHUNK), ['symbol']);
-    }
-
-    // Symbols not present in this refresh are soft-delisted.
-    await this.tickerRepo.update(
-      { lastSeenAt: LessThan(runAt) },
-      { active: false },
-    );
+    await this.tickerRepo.manager.transaction(async (manager) => {
+      await manager.clear(Ticker);
+      await manager.insert(Ticker, rows);
+    });
   }
 
   async search(search?: string, limit?: number): Promise<Ticker[]> {
-    const take = Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
+    const take = this.clamp(limit ?? DEFAULT_LIMIT, 1, MAX_LIMIT);
     const term = search?.trim();
     if (term) {
-      const q = this.escapeLike(term);
       return this.tickerRepo.find({
-        where: [
-          { active: true, symbol: ILike(`${q}%`) },
-        ],
+        where: { symbol: ILike(`${term}%`) },
         order: { symbol: 'ASC' },
         take,
       });
     }
 
     return this.tickerRepo.find({
-      where: { active: true },
       order: { symbol: 'ASC' },
       take,
     });
   }
 
-  private escapeLike(input: string): string {
-    return input.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+  private clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
   }
 }

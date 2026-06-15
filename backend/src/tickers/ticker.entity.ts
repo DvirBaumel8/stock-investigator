@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  Index,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity('tickers')
 export class Ticker {
@@ -17,23 +10,11 @@ export class Ticker {
   symbol: string;
 
   @Column()
-  name: string;
+  companyName: string;
 
   @Column()
   exchange: string;
 
   @Column()
   assetType: string;
-
-  @Column({ default: true })
-  active: boolean;
-
-  @Column({ type: 'timestamp' })
-  lastSeenAt: Date;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

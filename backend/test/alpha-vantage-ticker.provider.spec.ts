@@ -19,13 +19,13 @@ describe('AlphaVantageTickerProvider', () => {
       const records = makeProvider().parseCsv(CSV);
       expect(records).toContainEqual({
         symbol: 'AAPL',
-        name: 'Apple Inc',
+        companyName: 'Apple Inc',
         exchange: 'NASDAQ',
         assetType: 'Stock',
       });
       expect(records).toContainEqual({
         symbol: 'SPY',
-        name: 'SPDR S&P 500 ETF Trust',
+        companyName: 'SPDR S&P 500 ETF Trust',
         exchange: 'NYSE ARCA',
         assetType: 'ETF',
       });
@@ -40,7 +40,7 @@ describe('AlphaVantageTickerProvider', () => {
       const records = makeProvider().parseCsv(CSV);
       expect(records).toContainEqual({
         symbol: 'BRKA',
-        name: 'Berkshire, Hathaway',
+        companyName: 'Berkshire, Hathaway',
         exchange: 'NYSE',
         assetType: 'Stock',
       });

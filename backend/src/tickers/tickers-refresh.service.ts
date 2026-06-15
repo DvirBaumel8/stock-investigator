@@ -34,10 +34,9 @@ export class TickersRefreshService implements OnModuleInit {
       return;
     }
     this.isRunning = true;
-    const runAt = new Date();
     try {
       const records = await this.provider.fetchActiveTickers();
-      await this.tickersService.upsertMany(records, runAt);
+      await this.tickersService.replaceAll(records);
       this.logger.log(`Ticker refresh complete: ${records.length} active tickers`);
     } catch (err) {
       this.logger.error(`Ticker refresh failed: ${(err as Error).message}`);
