@@ -7,13 +7,7 @@ describe('TickersController', () => {
   beforeEach(() => {
     tickersService = {
       search: jest.fn().mockResolvedValue([
-        {
-          id: 'uuid-1',
-          symbol: 'AAPL',
-          companyName: 'Apple Inc',
-          exchange: 'NASDAQ',
-          assetType: 'Stock',
-        },
+        { symbol: 'AAPL', companyName: 'Apple Inc', assetType: 'Stock' },
       ]),
     };
     controller = new TickersController(tickersService);
@@ -29,10 +23,10 @@ describe('TickersController', () => {
     expect(tickersService.search).toHaveBeenCalledWith('aap', undefined);
   });
 
-  it('returns only public fields', async () => {
+  it('returns the service result directly', async () => {
     const result = await controller.list(undefined, undefined);
     expect(result).toEqual([
-      { symbol: 'AAPL', companyName: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+      { symbol: 'AAPL', companyName: 'Apple Inc', assetType: 'Stock' },
     ]);
   });
 });

@@ -7,6 +7,12 @@ import { TickerRecord } from './alpha-vantage-ticker.provider';
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
+export interface TickerResponse {
+  symbol: string;
+  companyName: string;
+  assetType: string;
+}
+
 @Injectable()
 export class TickersService {
   constructor(
@@ -21,37 +27,27 @@ export class TickersService {
   async replaceAll(records: TickerRecord[]): Promise<void> {
     if (records.length === 0) return;
 
-    const rows = records.map((r) => ({
-      symbol: r.symbol,
-      companyName: r.companyName,
-      exchange: r.exchange,
-      assetType: r.assetType,
-    }));
-
     await this.tickerRepo.manager.transaction(async (manager) => {
       await manager.clear(Ticker);
-      await manager.insert(Ticker, rows);
+      await manager.insert(Ticker, records);
     });
   }
 
-  async search(search?: string, limit?: number): Promise<Ticker[]> {
-    const take = this.clamp(limit ?? DEFAULT_LIMIT, 1, MAX_LIMIT);
-    const term = search?.trim();
-    if (term) {
-      return this.tickerRepo.find({
-        where: { symbol: ILike(`${term}%`) },
-        order: { symbol: 'ASC' },
-        take,
-      });
-    }
+  async search(search?: string, limit?: number): Promise<TickerResponse[]> {
+    const calculatedLimit = this.getCalculatedLimit(limit ?? DEFAULT_LIMIT, 1, MAX_LIMIT);
+    const normalizedSearch = search?.trim();
+    const tickers = normalizedSearch
+      ? await this.tickerRepo.find({ where: { symbol: ILike(`${normalizedSearch}%`) }, order: { symbol: 'ASC' }, take: calculatedLimit })
+      : await this.tickerRepo.find({ order: { symbol: 'ASC' }, take: calculatedLimit });
 
-    return this.tickerRepo.find({
-      order: { symbol: 'ASC' },
-      take,
-    });
+    return tickers.map(({ symbol, companyName, assetType }) => ({
+      symbol,
+      companyName,
+      assetType,
+    }));
   }
 
-  private clamp(value: number, min: number, max: number): number {
-    return Math.min(Math.max(value, min), max);
+  private getCalculatedLimit(limit: number, min: number, max: number): number {
+    return Math.min(Math.max(limit, min), max);
   }
 }

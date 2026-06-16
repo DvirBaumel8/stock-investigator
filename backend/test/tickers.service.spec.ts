@@ -104,5 +104,15 @@ describe('TickersService', () => {
       await service.search('a', 0);
       expect(repo.find.mock.calls[0][0].take).toBe(1);
     });
+
+    it('returns only public fields without id', async () => {
+      repo.find.mockResolvedValueOnce([
+        { id: 'uuid-1', symbol: 'AAPL', companyName: 'Apple Inc', exchange: 'NASDAQ', assetType: 'Stock' },
+      ]);
+      const result = await service.search('AAPL', 1);
+      expect(result).toEqual([
+        { symbol: 'AAPL', companyName: 'Apple Inc', assetType: 'Stock' },
+      ]);
+    });
   });
 });
