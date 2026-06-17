@@ -1,14 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
-import { Subject, Observable } from 'rxjs';
-import { MessageEvent } from '@nestjs/common';
-import { Analysis, AnalysisStatus } from './analysis.entity';
-import { AgentResult, AgentResultStatus } from '../agent-result/agent-result.entity';
-import { TechnicalAgent } from '../agents/technical/technical.agent';
-import { NewsSentimentAgent } from '../agents/news-sentiment/news-sentiment.agent';
-import { AgentInterface } from '../agents/agent.interface';
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, MoreThanOrEqual } from "typeorm";
+import { ConfigService } from "@nestjs/config";
+import { Subject, Observable } from "rxjs";
+import { MessageEvent } from "@nestjs/common";
+import { Analysis, AnalysisStatus } from "./analysis.entity";
+import {
+  AgentResult,
+  AgentResultStatus,
+} from "../agent-result/agent-result.entity";
+import { TechnicalAgent } from "../agents/technical/technical.agent";
+import { NewsSentimentAgent } from "../agents/news-sentiment/news-sentiment.agent";
+import { AgentInterface } from "../agents/agent.interface";
 
 @Injectable()
 export class AnalysisService {
@@ -33,7 +36,7 @@ export class AnalysisService {
   ): Promise<{ analysis: Analysis; cached: boolean }> {
     const normalizedTicker = ticker.toUpperCase().trim();
     const ttlHours = Number(
-      this.configService.get<string>('ANALYSIS_CACHE_TTL_HOURS') ?? '24',
+      this.configService.get<string>("ANALYSIS_CACHE_TTL_HOURS") ?? "24",
     );
     const cutoff = new Date(Date.now() - ttlHours * 60 * 60 * 1000);
 
@@ -43,7 +46,7 @@ export class AnalysisService {
         status: AnalysisStatus.COMPLETED,
         createdAt: MoreThanOrEqual(cutoff),
       },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
 
     if (cached) {
@@ -60,7 +63,9 @@ export class AnalysisService {
     this.activeStreams.set(analysis.id, subject);
 
     this.runAgents(analysis.id, normalizedTicker, subject).catch((err) => {
-      this.logger.error(`runAgents crashed for ${analysis.id}: ${(err as Error).message}`);
+      this.logger.error(
+        `runAgents crashed for ${analysis.id}: ${(err as Error).message}`,
+      );
     });
 
     return { analysis, cached: false };
@@ -74,7 +79,7 @@ export class AnalysisService {
       this.analysisRepo
         .findOne({
           where: { id: analysisId },
-          relations: ['agentResults'],
+          relations: ["agentResults"],
         })
         .then(async (analysis) => {
           if (!analysis) {
@@ -87,30 +92,34 @@ export class AnalysisService {
             analysis.status === AnalysisStatus.FAILED
           ) {
             analysis.agentResults.forEach((r) => subscriber.next({ data: r }));
-            subscriber.next({ type: 'complete', data: {} } as MessageEvent);
+            subscriber.next({ type: "complete", data: {} } as MessageEvent);
             subscriber.complete();
             return;
           }
 
-          let subject = this.activeStreams.get(analysisId);
+          const subject = this.activeStreams.get(analysisId);
           if (!subject) {
             // Race: runAgents may have finished between our findOne and this check.
             // Re-query to get the latest state before erroring.
             const refreshed = await this.analysisRepo.findOne({
               where: { id: analysisId },
-              relations: ['agentResults'],
+              relations: ["agentResults"],
             });
             if (
               refreshed &&
               (refreshed.status === AnalysisStatus.COMPLETED ||
                 refreshed.status === AnalysisStatus.FAILED)
             ) {
-              refreshed.agentResults.forEach((r) => subscriber.next({ data: r }));
-              subscriber.next({ type: 'complete', data: {} } as MessageEvent);
+              refreshed.agentResults.forEach((r) =>
+                subscriber.next({ data: r }),
+              );
+              subscriber.next({ type: "complete", data: {} } as MessageEvent);
               subscriber.complete();
             } else {
               subscriber.error(
-                new Error(`No active stream for running analysis ${analysisId}`),
+                new Error(
+                  `No active stream for running analysis ${analysisId}`,
+                ),
               );
             }
             return;
@@ -183,10 +192,12 @@ export class AnalysisService {
         completedAt: new Date(),
       });
 
-      subject.next({ type: 'complete', data: {} } as MessageEvent);
+      subject.next({ type: "complete", data: {} } as MessageEvent);
       subject.complete();
     } catch (err) {
-      this.logger.error(`runAgents failed for ${analysisId}: ${(err as Error).message}`);
+      this.logger.error(
+        `runAgents failed for ${analysisId}: ${(err as Error).message}`,
+      );
       subject.error(err);
     } finally {
       this.activeStreams.delete(analysisId);

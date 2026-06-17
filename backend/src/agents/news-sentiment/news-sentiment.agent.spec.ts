@@ -1,11 +1,11 @@
-import { NewsSentimentAgent } from './news-sentiment.agent';
+import { NewsSentimentAgent } from "./news-sentiment.agent";
 
-describe('NewsSentimentAgent (stub)', () => {
-  it('returns a record with agentName and ticker', async () => {
+describe("NewsSentimentAgent (stub)", () => {
+  it("returns a record with agentName and ticker", async () => {
     const agent = new NewsSentimentAgent();
-    const result = await agent.analyze('AAPL');
-    expect(agent.agentName).toBe('news_sentiment');
-    expect(result.ticker).toBe('AAPL');
+    const result = await agent.analyze("AAPL");
+    expect(agent.agentName).toBe("news_sentiment");
+    expect(result.ticker).toBe("AAPL");
     expect(Array.isArray(result.topHeadlines)).toBe(true);
   });
 });

@@ -4,26 +4,26 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
-} from 'typeorm';
-import { AgentResult } from '../agent-result/agent-result.entity';
+} from "typeorm";
+import { AgentResult } from "../agent-result/agent-result.entity";
 
 export enum AnalysisStatus {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
+  PENDING = "pending",
+  RUNNING = "running",
+  COMPLETED = "completed",
+  FAILED = "failed",
 }
 
-@Entity('analyses')
+@Entity("analyses")
 export class Analysis {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ length: 10 })
   ticker: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: AnalysisStatus,
     default: AnalysisStatus.PENDING,
   })
@@ -32,7 +32,7 @@ export class Analysis {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   completedAt: Date | null;
 
   @OneToMany(() => AgentResult, (result) => result.analysis, { eager: false })

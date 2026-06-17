@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { NewsSentimentAgent } from './news-sentiment.agent';
+import { Module } from "@nestjs/common";
+import { NewsSentimentAgent } from "./news-sentiment.agent";
 
 @Module({
   providers: [NewsSentimentAgent],
