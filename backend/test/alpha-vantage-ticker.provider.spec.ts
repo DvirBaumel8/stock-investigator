@@ -12,6 +12,8 @@ const CSV = [
   "SPY,SPDR S&P 500 ETF Trust,NYSE ARCA,ETF,1993-01-29,null,Active",
   "WARR,Warrant Co,NYSE,Warrant,2020-01-01,null,Active",
   'BRKA,"Berkshire, Hathaway",NYSE,Stock,1980-01-01,null,Active',
+  "MIMO-WS-A,Airspan Networks Warrant,AMEX,Stock,2021-01-01,null,Active",
+  "BATSCO,Some Co,BATS,Stock,2010-01-01,null,Active",
 ].join("\n");
 
 describe("AlphaVantageTickerProvider", () => {
@@ -35,6 +37,16 @@ describe("AlphaVantageTickerProvider", () => {
     it("filters out non-Stock/ETF asset types", () => {
       const records = makeProvider().parseCsv(CSV);
       expect(records.find((r) => r.symbol === "WARR")).toBeUndefined();
+    });
+
+    it("filters out symbols with hyphens or longer than 5 characters", () => {
+      const records = makeProvider().parseCsv(CSV);
+      expect(records.find((r) => r.symbol === "MIMO-WS-A")).toBeUndefined();
+    });
+
+    it("filters out exchanges outside NYSE/NYSE ARCA/NASDAQ", () => {
+      const records = makeProvider().parseCsv(CSV);
+      expect(records.find((r) => r.symbol === "BATSCO")).toBeUndefined();
     });
 
     it("handles commas inside the name field", () => {

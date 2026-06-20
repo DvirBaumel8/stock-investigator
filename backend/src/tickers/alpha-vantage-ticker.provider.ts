@@ -33,6 +33,16 @@ export class AlphaVantageTickerProvider {
     return records;
   }
 
+  // Standard US ticker: 1–5 uppercase letters only (no hyphens, dots, or numbers).
+  // Alpha Vantage returns warrants/preferred shares with extended notation (e.g. MIMO-WS-A)
+  // labelled as assetType=Stock, so we filter by symbol shape rather than trusting assetType alone.
+  private static readonly VALID_SYMBOL = /^[A-Z]{1,5}$/;
+  private static readonly ALLOWED_EXCHANGES = new Set([
+    "NYSE",
+    "NYSE ARCA",
+    "NASDAQ",
+  ]);
+
   // Columns: symbol,name,exchange,assetType,ipoDate,delistingDate,status
   // Names can contain commas, so anchor fields from the end (status is last).
   parseCsv(body: string): TickerRecord[] {
@@ -69,8 +79,9 @@ export class AlphaVantageTickerProvider {
         .trim()
         .replace(/^"|"$/g, "");
 
-      if (!symbol) continue;
+      if (!AlphaVantageTickerProvider.VALID_SYMBOL.test(symbol)) continue;
       if (assetType !== "Stock" && assetType !== "ETF") continue;
+      if (!AlphaVantageTickerProvider.ALLOWED_EXCHANGES.has(exchange)) continue;
 
       records.push({ symbol, companyName, exchange, assetType });
     }
