@@ -22,7 +22,9 @@
   border-radius: var(--radius-card);
   padding: 18px 16px 20px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   text-align: left;
   width: 100%;
 }

@@ -13,7 +13,9 @@ describe("TickersController", () => {
           { symbol: "AAPL", companyName: "Apple Inc", assetType: "Stock" },
         ]),
     };
-    controller = new TickersController(tickersService as unknown as TickersService);
+    controller = new TickersController(
+      tickersService as unknown as TickersService,
+    );
   });
 
   it("passes search and limit to the service", async () => {

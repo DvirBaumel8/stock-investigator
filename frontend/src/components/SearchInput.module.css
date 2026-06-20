@@ -12,12 +12,16 @@
   border-radius: var(--radius-pill);
   padding: 14px 18px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .pill:focus-within {
   border-color: #388bfd;
-  box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.15), 0 2px 16px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(56, 139, 253, 0.15),
+    0 2px 16px rgba(0, 0, 0, 0.45);
 }
 
 .searchIcon {
@@ -77,6 +81,11 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }

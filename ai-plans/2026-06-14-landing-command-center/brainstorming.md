@@ -51,7 +51,7 @@ Replace the current minimal `Home.tsx` with a polished, dark-themed "Command Cen
 - Left: magnifying glass SVG icon (muted color)
 - Middle: `<input>` — `placeholder="Enter ticker, e.g., TSLA..."`, font ~18px
 - Right: `"Pro ▼"` badge (blue button, small dropdown arrow) + mic SVG icon
-- Heading above: `"What are we researching today, Dvir?"` — large (~36px), white, bold
+- Heading above: `"What are we researching today?"` — large (~36px), white, bold
 
 ### Autocomplete Dropdown
 - Appears below the input pill (not attached — slight gap)

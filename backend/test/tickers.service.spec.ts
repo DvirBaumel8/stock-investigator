@@ -6,7 +6,11 @@ import { Ticker } from "../src/tickers/ticker.entity";
 
 describe("TickersService", () => {
   let service: TickersService;
-  let repo: { count: jest.Mock; find: jest.Mock; manager: { transaction: jest.Mock } };
+  let repo: {
+    count: jest.Mock;
+    find: jest.Mock;
+    manager: { transaction: jest.Mock };
+  };
   let mockManager: { clear: jest.Mock; insert: jest.Mock };
 
   beforeEach(async () => {

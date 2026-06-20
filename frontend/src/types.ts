@@ -2,7 +2,7 @@ export type AgentResultStatus = "pending" | "completed" | "failed";
 
 export interface TickerSuggestion {
   symbol: string;
-  name: string;
+  companyName: string;
   assetType?: string;
 }
 

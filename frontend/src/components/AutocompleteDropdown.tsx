@@ -1,5 +1,5 @@
-import styles from './AutocompleteDropdown.module.css';
-import type { TickerSuggestion } from '../types';
+import styles from "./AutocompleteDropdown.module.css";
+import type { TickerSuggestion } from "../types";
 
 interface AutocompleteDropdownProps {
   suggestions: TickerSuggestion[];
@@ -9,7 +9,13 @@ interface AutocompleteDropdownProps {
   onHover: (index: number) => void;
 }
 
-export function AutocompleteDropdown({ suggestions, activeIndex, loading, onSelect, onHover }: AutocompleteDropdownProps) {
+export function AutocompleteDropdown({
+  suggestions,
+  activeIndex,
+  loading,
+  onSelect,
+  onHover,
+}: AutocompleteDropdownProps) {
   if (loading) {
     return (
       <div className={styles.dropdown}>
@@ -25,13 +31,13 @@ export function AutocompleteDropdown({ suggestions, activeIndex, loading, onSele
       {suggestions.map((s, i) => (
         <div
           key={s.symbol}
-          className={`${styles.item} ${i === activeIndex ? styles.active : ''}`}
+          className={`${styles.item} ${i === activeIndex ? styles.active : ""}`}
           onMouseDown={() => onSelect(s.symbol)}
           onMouseEnter={() => onHover(i)}
         >
           <span className={styles.symbol}>{s.symbol}</span>
           <span className={styles.dash}>–</span>
-          <span className={styles.name}>{s.name}</span>
+          <span className={styles.name}>{s.companyName}</span>
         </div>
       ))}
     </div>

@@ -1,9 +1,9 @@
-import styles from './PopularCards.module.css';
+import styles from "./PopularCards.module.css";
 
 const POPULAR = [
-  { symbol: 'NVDA', label: "'The AI Kingpin'" },
-  { symbol: 'TSLA', label: "'Momentum Check'" },
-  { symbol: 'AAPL', label: "'The Safe Bet?'" },
+  { symbol: "NVDA", label: "'The AI Kingpin'" },
+  { symbol: "TSLA", label: "'Momentum Check'" },
+  { symbol: "AAPL", label: "'The Safe Bet?'" },
 ];
 
 interface PopularCardsProps {
@@ -16,10 +16,16 @@ export function PopularCards({ onSelect }: PopularCardsProps) {
       <div className={styles.heading}>Popular Researches</div>
       <div className={styles.grid}>
         {POPULAR.map(({ symbol, label }) => (
-          <button key={symbol} className={styles.card} onClick={() => onSelect(symbol)}>
+          <button
+            key={symbol}
+            className={styles.card}
+            onClick={() => onSelect(symbol)}
+          >
             <div className={styles.label}>Quick Research</div>
             <div className={styles.title}>
-              <span className={styles.ticker}>${symbol}</span>{' – '}{label}
+              <span className={styles.ticker}>${symbol}</span>
+              {" – "}
+              {label}
             </div>
           </button>
         ))}
