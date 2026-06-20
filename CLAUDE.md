@@ -34,21 +34,42 @@ Users enter a stock ticker. The system runs multiple specialized AI agents in pa
 ## External APIs
 
 - Yahoo Finance (unofficial, no key required) — market data
-- Alpha Vantage free tier (25 req/day) — news sentiment
+- Alpha Vantage free tier (25 req/day) — news sentiment; also `LISTING_STATUS` for the ticker universe (see Ticker List)
 
 Keys live in `.env` via NestJS `ConfigModule`. Never hardcoded.
+
+## Ticker List
+
+A `tickers/` module maintains the universe of tradable US symbols:
+
+- **Source**: Alpha Vantage `LISTING_STATUS` (CSV), active Stocks + ETFs
+- **Storage**: `tickers` table (`symbol`, `name`, `exchange`, `assetType`, `active`, `lastSeenAt`). `symbol` is `varchar(32)` — some listed symbols exceed 10 chars (e.g. `NXT(EXP20091224)`).
+- **Refresh**: weekly cron (`@nestjs/schedule`, Sundays 00:00) upserts by symbol and soft-delists (`active=false`) symbols no longer listed. Seeds once on startup if the table is empty. A failed fetch is logged and leaves existing data intact.
+- **API**: `GET /tickers?search=&limit=` — search by symbol prefix / name substring, `limit` clamped to 100 (default 20). Returns `{ symbol, name, exchange, assetType }[]`.
 
 ## Future Work
 
 See `docs/superpowers/specs/2026-06-13-stock-investigator-design.md` → "Future Work" section for the planned Agent Intelligence Layer, including the self-improvement feedback loop.
+
+## Testing
+
+**Convention: tests live in a separate `test/` folder, not colocated with source.**
+
+- All backend unit tests go in `backend/test/` as a **flat** directory of `*.spec.ts` files (e.g. `backend/test/tickers.service.spec.ts`), never next to the source file in `src/`.
+- Tests import from source with a `../src/...` path.
+- Jest is configured (`package.json` → `jest`) with `rootDir: "."` and `testRegex: "test/.*\\.spec\\.ts$"`; `tsconfig.json` excludes `test` and `**/*.spec.ts` from `nest build` so tests never ship in `dist/`.
+- Run with `npm test` from `backend/`.
 
 ## Project Structure
 
 ```
 stock-investigator/
 ├── backend/          -- NestJS app
+│   ├── src/          -- application code
+│   └── test/         -- unit tests (flat *.spec.ts), separate from src
 ├── frontend/         -- React app
 └── docs/
     └── superpowers/
-        └── specs/    -- design documents
+        ├── specs/    -- design documents
+        └── plans/    -- implementation plans
 ```
