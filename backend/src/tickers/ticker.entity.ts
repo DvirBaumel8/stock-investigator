@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from "typeorm";
 
-@Entity('tickers')
+@Entity("tickers")
 export class Ticker {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Index({ unique: true })

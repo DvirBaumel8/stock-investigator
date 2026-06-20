@@ -1,7 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { AlphaVantageTickerProvider } from './alpha-vantage-ticker.provider';
-import { TickersService } from './tickers.service';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { AlphaVantageTickerProvider } from "./alpha-vantage-ticker.provider";
+import { TickersService } from "./tickers.service";
 
 @Injectable()
 export class TickersRefreshService implements OnModuleInit {
@@ -16,7 +16,7 @@ export class TickersRefreshService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     const count = await this.tickersService.count();
     if (count === 0) {
-      this.logger.log('Tickers table is empty — seeding on startup');
+      this.logger.log("Tickers table is empty — seeding on startup");
       // Run in the background so we do not block application boot.
       void this.refresh();
     }
@@ -30,14 +30,16 @@ export class TickersRefreshService implements OnModuleInit {
 
   async refresh(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn('Ticker refresh already in progress — skipping');
+      this.logger.warn("Ticker refresh already in progress — skipping");
       return;
     }
     this.isRunning = true;
     try {
       const records = await this.provider.fetchActiveTickers();
       await this.tickersService.replaceAll(records);
-      this.logger.log(`Ticker refresh complete: ${records.length} active tickers`);
+      this.logger.log(
+        `Ticker refresh complete: ${records.length} active tickers`,
+      );
     } catch (err) {
       this.logger.error(`Ticker refresh failed: ${(err as Error).message}`);
     } finally {

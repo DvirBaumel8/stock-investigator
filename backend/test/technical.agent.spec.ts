@@ -1,4 +1,4 @@
-import { TechnicalAgent } from '../src/agents/technical/technical.agent';
+import { TechnicalAgent } from "../src/agents/technical/technical.agent";
 
 describe("TechnicalAgent (stub)", () => {
   it("returns a record with agentName and ticker", async () => {

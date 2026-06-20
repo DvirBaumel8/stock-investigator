@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
-import { Ticker } from './ticker.entity';
-import { TickerRecord } from './alpha-vantage-ticker.provider';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, ILike } from "typeorm";
+import { Ticker } from "./ticker.entity";
+import { TickerRecord } from "./alpha-vantage-ticker.provider";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -34,11 +34,22 @@ export class TickersService {
   }
 
   async search(search?: string, limit?: number): Promise<TickerResponse[]> {
-    const calculatedLimit = this.getCalculatedLimit(limit ?? DEFAULT_LIMIT, 1, MAX_LIMIT);
+    const calculatedLimit = this.getCalculatedLimit(
+      limit ?? DEFAULT_LIMIT,
+      1,
+      MAX_LIMIT,
+    );
     const normalizedSearch = search?.trim();
     const tickers = normalizedSearch
-      ? await this.tickerRepo.find({ where: { symbol: ILike(`${normalizedSearch}%`) }, order: { symbol: 'ASC' }, take: calculatedLimit })
-      : await this.tickerRepo.find({ order: { symbol: 'ASC' }, take: calculatedLimit });
+      ? await this.tickerRepo.find({
+          where: { symbol: ILike(`${normalizedSearch}%`) },
+          order: { symbol: "ASC" },
+          take: calculatedLimit,
+        })
+      : await this.tickerRepo.find({
+          order: { symbol: "ASC" },
+          take: calculatedLimit,
+        });
 
     return tickers.map(({ symbol, companyName, assetType }) => ({
       symbol,

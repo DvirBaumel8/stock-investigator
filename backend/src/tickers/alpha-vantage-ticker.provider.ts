@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 export interface TickerRecord {
   symbol: string;
@@ -11,14 +11,14 @@ export interface TickerRecord {
 @Injectable()
 export class AlphaVantageTickerProvider {
   private readonly logger = new Logger(AlphaVantageTickerProvider.name);
-  private readonly baseUrl = 'https://www.alphavantage.co/query';
+  private readonly baseUrl = "https://www.alphavantage.co/query";
 
   constructor(private readonly configService: ConfigService) {}
 
   async fetchActiveTickers(): Promise<TickerRecord[]> {
-    const apiKey = this.configService.get<string>('ALPHA_VANTAGE_API_KEY');
+    const apiKey = this.configService.get<string>("ALPHA_VANTAGE_API_KEY");
     if (!apiKey) {
-      throw new Error('ALPHA_VANTAGE_API_KEY is not configured');
+      throw new Error("ALPHA_VANTAGE_API_KEY is not configured");
     }
     const url = `${this.baseUrl}?function=LISTING_STATUS&state=active&apikey=${apiKey}`;
     const response = await fetch(url);
@@ -27,7 +27,9 @@ export class AlphaVantageTickerProvider {
     }
     const body = await response.text();
     const records = this.parseCsv(body);
-    this.logger.log(`Fetched ${records.length} active Stock/ETF tickers from Alpha Vantage`);
+    this.logger.log(
+      `Fetched ${records.length} active Stock/ETF tickers from Alpha Vantage`,
+    );
     return records;
   }
 
@@ -35,27 +37,27 @@ export class AlphaVantageTickerProvider {
   // Names can contain commas, so anchor fields from the end (status is last).
   parseCsv(body: string): TickerRecord[] {
     const trimmed = body.trim();
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
       throw new Error(
         `Alpha Vantage returned a non-CSV response: ${trimmed.slice(0, 200)}`,
       );
     }
 
     const lines = trimmed
-      .split('\n')
+      .split("\n")
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
     const header = lines[0]?.toLowerCase();
-    if (!header || !header.startsWith('symbol,')) {
+    if (!header || !header.startsWith("symbol,")) {
       throw new Error(
-        `Unexpected Alpha Vantage CSV header: ${header ?? '(empty)'}`,
+        `Unexpected Alpha Vantage CSV header: ${header ?? "(empty)"}`,
       );
     }
 
     const records: TickerRecord[] = [];
     for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',');
+      const cols = lines[i].split(",");
       if (cols.length < 7) continue;
 
       const symbol = cols[0].trim();
@@ -63,12 +65,12 @@ export class AlphaVantageTickerProvider {
       const exchange = cols[cols.length - 5].trim();
       const companyName = cols
         .slice(1, cols.length - 5)
-        .join(',')
+        .join(",")
         .trim()
-        .replace(/^"|"$/g, '');
+        .replace(/^"|"$/g, "");
 
       if (!symbol) continue;
-      if (assetType !== 'Stock' && assetType !== 'ETF') continue;
+      if (assetType !== "Stock" && assetType !== "ETF") continue;
 
       records.push({ symbol, companyName, exchange, assetType });
     }
