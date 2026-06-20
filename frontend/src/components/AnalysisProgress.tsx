@@ -20,9 +20,11 @@ export function AnalysisProgress({
       style={{
         marginBottom: 16,
         padding: "10px 14px",
-        background: "#f8f9fa",
-        borderRadius: 6,
+        background: "#161b22",
+        border: "1px solid #30363d",
+        borderRadius: 8,
         fontSize: 14,
+        color: "#e6edf3",
       }}
     >
       <strong>{ticker}</strong>
@@ -31,8 +33,8 @@ export function AnalysisProgress({
           style={{
             marginLeft: 10,
             fontSize: 12,
-            color: "#888",
-            background: "#e8e8e8",
+            color: "#7d8590",
+            background: "#21262d",
             padding: "2px 8px",
             borderRadius: 10,
           }}
@@ -41,12 +43,12 @@ export function AnalysisProgress({
         </span>
       )}
       {!isComplete && (
-        <span style={{ marginLeft: 10, color: "#555" }}>
+        <span style={{ marginLeft: 10, color: "#7d8590" }}>
           {completedAgents}/{totalAgents} agents complete
         </span>
       )}
       {isComplete && (
-        <span style={{ marginLeft: 10, color: "#27ae60" }}>
+        <span style={{ marginLeft: 10, color: "#3fb950" }}>
           ✓ Analysis complete
         </span>
       )}

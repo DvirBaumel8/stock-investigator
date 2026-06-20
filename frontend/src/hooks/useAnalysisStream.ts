@@ -76,6 +76,7 @@ export function useAnalysisStream(): UseAnalysisStreamReturn {
         });
 
         es.onerror = () => {
+          setError("Stream connection lost. Please try again.");
           setIsLoading(false);
           setIsComplete(true);
           es.close();
