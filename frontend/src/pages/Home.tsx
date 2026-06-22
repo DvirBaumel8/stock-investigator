@@ -51,9 +51,7 @@ export function Home() {
 
       <main className={`${styles.main} ${showResults ? "" : styles.centered}`}>
         <div className={styles.hero}>
-          <h1 className={styles.heading}>
-            What are we researching today?
-          </h1>
+          <h1 className={styles.heading}>What are we researching today?</h1>
           <SearchInput
             value={query}
             onChange={setQuery}

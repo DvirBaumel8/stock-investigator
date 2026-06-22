@@ -28,7 +28,8 @@ export function useAutocomplete(query: string) {
         const data: TickerSuggestion[] = await res.json();
         setResult({ query: q, data });
       } catch (err) {
-        if ((err as Error).name !== "AbortError") setResult({ query: q, data: [] });
+        if ((err as Error).name !== "AbortError")
+          setResult({ query: q, data: [] });
       } finally {
         setLoading(false);
       }
