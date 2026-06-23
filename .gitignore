@@ -8,3 +8,6 @@
 .idea/queries/
 .idea/dataSources/
 .idea/dataSources.local.xml
+
+# Superpowers planning artifacts (local design specs & implementation plans)
+docs/superpowers/
