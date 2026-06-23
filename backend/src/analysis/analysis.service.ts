@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, MoreThanOrEqual } from "typeorm";
 import { ConfigService } from "@nestjs/config";
-import { Subject, Observable } from "rxjs";
+import { ReplaySubject, Observable } from "rxjs";
 import { MessageEvent } from "@nestjs/common";
 import { Analysis, AnalysisStatus } from "./analysis.entity";
 import {
@@ -16,7 +16,7 @@ import { AgentInterface } from "../agents/agent.interface";
 @Injectable()
 export class AnalysisService {
   private readonly logger = new Logger(AnalysisService.name);
-  private readonly activeStreams = new Map<string, Subject<MessageEvent>>();
+  private readonly activeStreams = new Map<string, ReplaySubject<MessageEvent>>();
   private readonly agents: AgentInterface[];
 
   constructor(
@@ -59,8 +59,12 @@ export class AnalysisService {
       status: AnalysisStatus.RUNNING,
     });
 
-    const subject = new Subject<MessageEvent>();
+    const subject = new ReplaySubject<MessageEvent>();
     this.activeStreams.set(analysis.id, subject);
+
+    this.logger.log(
+      `Starting analysis ${analysis.id} for ${normalizedTicker} (${this.agents.length} agents)`,
+    );
 
     this.runAgents(analysis.id, normalizedTicker, subject).catch((err) => {
       this.logger.error(
@@ -144,7 +148,7 @@ export class AnalysisService {
   private async runAgents(
     analysisId: string,
     ticker: string,
-    subject: Subject<MessageEvent>,
+    subject: ReplaySubject<MessageEvent>,
   ): Promise<void> {
     const results: AgentResult[] = new Array(this.agents.length);
 
@@ -159,13 +163,18 @@ export class AnalysisService {
           });
 
           try {
+            this.logger.log(`Agent [${agent.agentName}] started for ${ticker}`);
             const output = await agent.analyze(ticker);
+            const durationMs = Date.now() - start;
             result = await this.agentResultRepo.save({
               ...result,
               status: AgentResultStatus.COMPLETED,
               output,
-              durationMs: Date.now() - start,
+              durationMs,
             });
+            this.logger.log(
+              `Agent [${agent.agentName}] completed for ${ticker} in ${durationMs}ms`,
+            );
           } catch (err) {
             this.logger.error(
               `Agent ${agent.agentName} failed for ${ticker} (${analysisId}): ${(err as Error).message}`,
@@ -192,6 +201,9 @@ export class AnalysisService {
         completedAt: new Date(),
       });
 
+      this.logger.log(
+        `Analysis ${analysisId} finished — status: ${anySucceeded ? AnalysisStatus.COMPLETED : AnalysisStatus.FAILED}`,
+      );
       subject.next({ type: "complete", data: {} } as MessageEvent);
       subject.complete();
     } catch (err) {
