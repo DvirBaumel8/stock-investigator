@@ -12,6 +12,7 @@
     "fe:lint:fix":       "npm run lint:fix --prefix frontend",
     "fe:format":         "npm run format --prefix frontend",
     "fe:format:check":   "npm run format:check --prefix frontend",
+    "fe:test":           "npm run test --prefix frontend",
 
     "be:dev":            "npm run start:dev --prefix backend",
     "be:build":          "npm run build --prefix backend",
@@ -25,6 +26,7 @@
 
     "build":             "npm run fe:build && npm run be:build",
     "test":              "npm run be:test",
+    "test:all":          "npm run be:test && npm run fe:test",
     "tsc":               "npm run fe:typecheck && npm run be:typecheck",
     "lint":              "npm run fe:lint && npm run be:lint",
     "lint:fix":          "npm run fe:lint:fix && npm run be:lint:fix",
